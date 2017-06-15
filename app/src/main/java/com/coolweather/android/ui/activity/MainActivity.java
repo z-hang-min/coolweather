@@ -1,6 +1,9 @@
 package com.coolweather.android.ui.activity;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 
 import com.coolweather.android.R;
@@ -14,5 +17,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         LitePal.getDatabase();
+//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+//        if (sharedPreferences.getString("weather", null) != null) {
+//            Intent intent = new Intent(this, WeatherActivity.class);
+//            startActivity(intent);
+//        }
     }
 }
