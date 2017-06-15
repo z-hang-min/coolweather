@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -127,7 +128,7 @@ public class ChooseAreaFragment extends Fragment {
             listView.setSelection(0);
             currentLevel = LEVEL_CITY;
         } else {
-            String address = "http://guolin.tech/api/china" + selectedProvince.getProvinceCode();
+            String address = "http://guolin.tech/api/china/" + selectedProvince.getProvinceCode();
             queryFromServer(address, "city");
         }
 
@@ -146,7 +147,7 @@ public class ChooseAreaFragment extends Fragment {
             listView.setSelection(0);
             currentLevel = LEVEL_COUNTY;
         } else {
-            String address = "http://guolin.tech/api/china" + selectedProvince.getProvinceCode() + "/" + selectedCity.getCityCode();
+            String address = "http://guolin.tech/api/china/" + selectedProvince.getProvinceCode() + "/" + selectedCity.getCityCode();
             queryFromServer(address, "county");
         }
 
@@ -169,6 +170,7 @@ public class ChooseAreaFragment extends Fragment {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String responseText = response.body().string();
+                Log.e(HttpUtil.TAG,responseText);
                 boolean result = false;
                 if ("province".equals(type)) {
                     result = Utility.handleProvinceResponse(responseText);
