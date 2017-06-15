@@ -86,7 +86,7 @@ public class ChooseAreaFragment extends Fragment {
                     Intent intent = new Intent(getActivity(), WeatherActivity.class);
                     intent.putExtra("weather_id", weatherid);
                     startActivity(intent);
-//                    getActivity().finish();
+                    getActivity().finish();
                 }
             }
         });
@@ -178,7 +178,6 @@ public class ChooseAreaFragment extends Fragment {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String responseText = response.body().string();
-                Log.e(HttpUtil.TAG, responseText);
                 boolean result = false;
                 if ("province".equals(type)) {
                     result = Utility.handleProvinceResponse(responseText);

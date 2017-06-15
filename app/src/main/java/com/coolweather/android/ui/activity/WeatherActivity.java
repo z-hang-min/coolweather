@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,17 +47,17 @@ public class WeatherActivity extends AppCompatActivity {
         comfortText = (TextView) findViewById(R.id.comfort_text);
         carWashText = (TextView) findViewById(R.id.car_wash_text);
         sportText = (TextView) findViewById(R.id.sport_text);
-        SharedPreferences perfs = PreferenceManager.getDefaultSharedPreferences(this);
-        String weatherString = perfs.getString("weather", null);
-        if (weatherString != null) {
-            Weather weather = Utility.handleWeatherResponse(weatherString);
-            showWeatherInfo(weather);
-        } else {
+//        SharedPreferences perfs = PreferenceManager.getDefaultSharedPreferences(this);
+//        String weatherString = perfs.getString("weather", null);
+//        if (weatherString != null) {
+//            Weather weather = Utility.handleWeatherResponse(weatherString);
+//            showWeatherInfo(weather);
+//        } else {
             String weatherid = getIntent().getStringExtra("weather_id");
             scrollView.setVisibility(View.INVISIBLE);
             requestWeather(weatherid);
-
-        }
+//
+//        }
 
     }
 
@@ -76,7 +77,7 @@ public class WeatherActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                final String responseText = response.body().toString();
+                final String responseText = response.body().string();
                 final Weather weather = Utility.handleWeatherResponse(responseText);
                 runOnUiThread(new Runnable() {
                     @Override
@@ -103,10 +104,14 @@ public class WeatherActivity extends AppCompatActivity {
         String updateTime = weather.basic.update.updateTime.split(" ")[1];
         String degree = weather.now.temperature + "℃";
         String weatherInfo = weather.now.more.info;
-        titleCity.setText(cityName);
-        titleUpdateTime.setText(updateTime);
-        degreeText.setText(degree);
-        weatherInfoText.setText(weatherInfo);
+        if (!TextUtils.isEmpty(cityName))
+            titleCity.setText(cityName);
+        if (!TextUtils.isEmpty(updateTime))
+//            titleUpdateTime.setText(updateTime);
+        if (!TextUtils.isEmpty(degree))
+            degreeText.setText(degree);
+        if (!TextUtils.isEmpty(weatherInfo))
+            weatherInfoText.setText(weatherInfo);
         forecastLayout.removeAllViews();
         for (ForeCast foreCast : weather.foreCastList) {
             View view = LayoutInflater.from(this).inflate(R.layout.forecast_item, forecastLayout, false);
@@ -117,16 +122,23 @@ public class WeatherActivity extends AppCompatActivity {
             dateText.setText(foreCast.date);
             infoText.setText(foreCast.more.info);
             maxText.setText(foreCast.temperature.max);
-            maxText.setText(foreCast.temperature.min);
+            minText.setText(foreCast.temperature.min);
             forecastLayout.addView(view);
         }
         if (weather.aqi != null) {
             aqiText.setText(weather.aqi.aqiCity.aqi);
             pm25Text.setText(weather.aqi.aqiCity.pm25);
         }
-        comfortText.setText("舒适度:" + weather.suggestion.comfort.info);
-        carWashText.setText("洗车指数:" + weather.suggestion.carWash.info);
-        sportText.setText("运动建议:" + weather.suggestion.sport.info);
+
+        String comfortInfo = weather.suggestion.comfort.info;
+        String carWashInfo = weather.suggestion.carWash.info;
+        String sportInfo = weather.suggestion.sport.info;
+        if (!TextUtils.isEmpty(comfortInfo))
+            comfortText.setText("舒适度:" + comfortInfo);
+        if (!TextUtils.isEmpty(carWashInfo))
+        carWashText.setText("洗车指数:" + carWashInfo);
+        if (!TextUtils.isEmpty(sportInfo))
+        sportText.setText("运动建议:" + sportInfo);
         scrollView.setVisibility(View.VISIBLE);
 
     }
