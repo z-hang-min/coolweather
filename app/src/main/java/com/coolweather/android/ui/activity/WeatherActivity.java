@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,6 +35,8 @@ public class WeatherActivity extends AppCompatActivity {
             comfortText, carWashText, sportText;
     private LinearLayout forecastLayout;
     private ImageView bingPicImg;
+    private SwipeRefreshLayout swipeRefresh;
+    private String mWeatherId;
 
 
     @Override
@@ -57,15 +60,18 @@ public class WeatherActivity extends AppCompatActivity {
         comfortText = (TextView) findViewById(R.id.comfort_text);
         carWashText = (TextView) findViewById(R.id.car_wash_text);
         sportText = (TextView) findViewById(R.id.sport_text);
+        swipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
+        swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
         SharedPreferences perfs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = perfs.getString("weather", null);
         if (weatherString != null) {
             Weather weather = Utility.handleWeatherResponse(weatherString);
+            mWeatherId = weather.basic.weatherId;
             showWeatherInfo(weather);
         } else {
-            String weatherid = getIntent().getStringExtra("weather_id");
+            mWeatherId = getIntent().getStringExtra("weather_id");
             scrollView.setVisibility(View.INVISIBLE);
-            requestWeather(weatherid);
+            requestWeather(mWeatherId);
 
         }
         String bingPic = perfs.getString("bing_pic", null);
@@ -74,7 +80,12 @@ public class WeatherActivity extends AppCompatActivity {
         } else {
             lodBingpicImg();
         }
-
+        swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                requestWeather(mWeatherId);
+            }
+        });
     }
 
     private void requestWeather(String weatherid) {
@@ -86,7 +97,7 @@ public class WeatherActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Toast.makeText(WeatherActivity.this, "获取天气信息失败....", Toast.LENGTH_SHORT).show();
-
+                        swipeRefresh.setRefreshing(false);
                     }
                 });
             }
@@ -107,6 +118,7 @@ public class WeatherActivity extends AppCompatActivity {
                         } else {
                             Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
                         }
+                        swipeRefresh.setRefreshing(false);
                     }
                 });
             }
