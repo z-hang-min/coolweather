@@ -1,5 +1,6 @@
 package com.coolweather.android.ui.activity;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -22,6 +23,7 @@ import com.bumptech.glide.Glide;
 import com.coolweather.android.R;
 import com.coolweather.android.gson.ForeCast;
 import com.coolweather.android.gson.Weather;
+import com.coolweather.android.service.AutoUpdateService;
 import com.coolweather.android.util.HttpUtil;
 import com.coolweather.android.util.Utility;
 
@@ -33,13 +35,13 @@ import okhttp3.Response;
 
 public class WeatherActivity extends AppCompatActivity {
     public DrawerLayout drawerLayout;
+    public SwipeRefreshLayout swipeRefresh;
     private ScrollView scrollView;
     private TextView titleCity, titleUpdateTime, degreeText,
             weatherInfoText, aqiText, pm25Text,
             comfortText, carWashText, sportText;
     private LinearLayout forecastLayout;
     private ImageView bingPicImg;
-    public SwipeRefreshLayout swipeRefresh;
     private String mWeatherId;
     private Button navButton;
 
@@ -104,6 +106,7 @@ public class WeatherActivity extends AppCompatActivity {
     }
 
     public void requestWeather(String weatherid) {
+        mWeatherId = weatherid;
         String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherid + "&key=bc0418b57b2d4918819d3974ac1285d9";
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
             @Override
@@ -141,42 +144,48 @@ public class WeatherActivity extends AppCompatActivity {
     }
 
     private void showWeatherInfo(Weather weather) {
-        if (weather == null)
-            return;
-        String cityName = weather.basic.cityName;
-        String updateTime = weather.basic.update.updateTime.split(" ")[1];
-        String degree = weather.now.temperature + "℃";
-        String weatherInfo = weather.now.more.info;
-        titleCity.setText(cityName);
-        titleUpdateTime.setText(updateTime);
-        degreeText.setText(degree);
-        weatherInfoText.setText(weatherInfo);
-        forecastLayout.removeAllViews();
-        for (ForeCast foreCast : weather.foreCastList) {
-            View view = LayoutInflater.from(this).inflate(R.layout.forecast_item, forecastLayout, false);
-            TextView dateText = (TextView) view.findViewById(R.id.data_text);
-            TextView infoText = (TextView) view.findViewById(R.id.info_text);
-            TextView maxText = (TextView) view.findViewById(R.id.max_text);
-            TextView minText = (TextView) view.findViewById(R.id.min_text);
-            dateText.setText(foreCast.date);
-            infoText.setText(foreCast.more.info);
-            maxText.setText(foreCast.temperature.max);
-            minText.setText(foreCast.temperature.min);
-            forecastLayout.addView(view);
-        }
-        if (weather.aqi != null) {
-            aqiText.setText(weather.aqi.aqiCity.aqi);
-            pm25Text.setText(weather.aqi.aqiCity.pm25);
-        }
+        if (weather != null && "ok".equals(weather.status)) {
 
-        String comfortInfo = weather.suggestion.comfort.info;
-        String carWashInfo = weather.suggestion.carWash.info;
-        String sportInfo = weather.suggestion.sport.info;
-        comfortText.setText("舒适度:" + comfortInfo);
-        carWashText.setText("洗车指数:" + carWashInfo);
-        sportText.setText("运动建议:" + sportInfo);
-        scrollView.setVisibility(View.VISIBLE);
 
+            String cityName = weather.basic.cityName;
+            String updateTime = weather.basic.update.updateTime.split(" ")[1];
+            String degree = weather.now.temperature + "℃";
+            String weatherInfo = weather.now.more.info;
+            titleCity.setText(cityName);
+            titleUpdateTime.setText(updateTime);
+            degreeText.setText(degree);
+            weatherInfoText.setText(weatherInfo);
+            forecastLayout.removeAllViews();
+            for (ForeCast foreCast : weather.foreCastList) {
+                View view = LayoutInflater.from(this).inflate(R.layout.forecast_item, forecastLayout, false);
+                TextView dateText = (TextView) view.findViewById(R.id.data_text);
+                TextView infoText = (TextView) view.findViewById(R.id.info_text);
+                TextView maxText = (TextView) view.findViewById(R.id.max_text);
+                TextView minText = (TextView) view.findViewById(R.id.min_text);
+                dateText.setText(foreCast.date);
+                infoText.setText(foreCast.more.info);
+                maxText.setText(foreCast.temperature.max);
+                minText.setText(foreCast.temperature.min);
+                forecastLayout.addView(view);
+            }
+            if (weather.aqi != null) {
+                aqiText.setText(weather.aqi.aqiCity.aqi);
+                pm25Text.setText(weather.aqi.aqiCity.pm25);
+            }
+
+            String comfortInfo = weather.suggestion.comfort.info;
+            String carWashInfo = weather.suggestion.carWash.info;
+            String sportInfo = weather.suggestion.sport.info;
+            comfortText.setText("舒适度:" + comfortInfo);
+            carWashText.setText("洗车指数:" + carWashInfo);
+            sportText.setText("运动建议:" + sportInfo);
+            scrollView.setVisibility(View.VISIBLE);
+            Intent intent = new Intent(this, AutoUpdateService.class);
+            startService(intent);
+        } else {
+            Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
+
+        }
     }
 
     private void lodBingpicImg() {
